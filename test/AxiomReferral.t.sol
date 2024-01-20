@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { AxiomTest } from "@axiom-v2-client/test/AxiomTest.sol";
-import { AxiomVm } from "@axiom-v2-client/test/AxiomVm.sol";
+import { AxiomTest } from "@axiom-crypto/v2-periphery/test/AxiomTest.sol";
+import { AxiomVm } from "@axiom-crypto/v2-periphery/test/AxiomVm.sol";
 
 import { AxiomReferral } from "../src/AxiomReferral.sol";
 
