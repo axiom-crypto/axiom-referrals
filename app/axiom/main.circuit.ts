@@ -86,7 +86,8 @@ export const circuit = async ({
     let traderReferrer = (await getSolidityMapping(blockNumbers[i], REFERRAL_ADDRESS, REFERRAL_MAPPING_SLOT).key(trader)).toCircuitValue();
     checkEqual(referrer, traderReferrer);
     let amount = await getReceipt(blockNumbers[i], txIdxs[i]).log(logIdxs[i]).data(4);
-    tradeVolume = add(tradeVolume, amount.toCircuitValue());
+    let amountOrZero = mul(amount.toCircuitValue(), inRange[i]);
+    tradeVolume = add(tradeVolume, amountOrZero);
   }
 
   const lastClaimId = selectFromIdx(claimIds, sub(numClaims, constant(1)));
