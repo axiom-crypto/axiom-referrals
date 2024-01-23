@@ -7,6 +7,9 @@
   ffi = true
   fs_permissions = [{ access = "read-write", path = ".axiom" }]
 
+[rpc_endpoints]
+sepolia = "${PROVIDER_URI}"
+
 [fmt]
   bracket_spacing = true
   int_types = "long"

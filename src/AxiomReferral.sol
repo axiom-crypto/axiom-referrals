@@ -11,16 +11,24 @@ contract AxiomReferral is AxiomV2Client {
     uint64 immutable SOURCE_CHAIN_ID;
 
     /// @dev `referralAddress[trader] = referrer` if `referrer` referred `trader`.
-    mapping(address => address) referralAddress;
+    mapping(address => address) public referralAddress;
 
-    /// @dev `lastClaimedBlockNumber[referrer]` is the latest block number at which `referrer` claimed a referral reward.
-    mapping(address => uint64) lastClaimedBlockNumber;
+    /// @dev `lastClaimedId[referrer]` is the latest `claimId` at which `referrer` claimed a referral reward.
+    /// @dev `claimId` = `blockNumber` * 2^128 + `txIdx` * 2^64 + `logIdx`
+    mapping(address => uint256) public lastClaimedId;
 
     /// @notice Emitted when a new referral is registered.
     /// @param trader The address of the trader.
     /// @param referrer The address of the referrer.
     /// @param blockNumber The block number at which the referral was registered.
     event Referral(address indexed trader, address indexed referrer, uint64 blockNumber);
+
+    /// @notice Emitted when a claim is made.
+    /// @param referrer The address of the referrer.
+    /// @param startClaimId The ID of the first claim in the claim batch.
+    /// @param endClaimId The ID of the last claim in the claim batch.
+    /// @param totalTradeVolume The total trade volume of the claim batch.
+    event Claim(address indexed referrer, uint256 startClaimId, uint256 endClaimId, uint256 totalTradeVolume);
 
     /// @notice Construct a new AxiomNonceIncrementor contract.
     /// @param  _axiomV2QueryAddress The address of the AxiomV2Query contract.
@@ -62,9 +70,16 @@ contract AxiomReferral is AxiomV2Client {
         bytes32[] calldata axiomResults,
         bytes calldata // extraData
     ) internal override {
-        uint64 startBlockNumber = uint64(uint256(axiomResults[0]));
-        uint64 endBlockNumber = uint64(uint256(axiomResults[1]));
+        uint256 startClaimId = uint256(axiomResults[0]);
+        uint256 endClaimId = uint256(axiomResults[1]);
         address referrer = address(uint160(uint256(axiomResults[2])));
         uint256 totalTradeVolume = uint256(axiomResults[3]);
+
+        require(referrer != address(0), "Referrer not set");
+        require(lastClaimedId[referrer] < startClaimId, "Already claimed");
+
+        lastClaimedId[referrer] = endClaimId;
+
+        emit Claim(referrer, startClaimId, endClaimId, totalTradeVolume);
     }
 }

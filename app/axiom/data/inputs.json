@@ -1,0 +1,16 @@
+{
+    "blockNumbers": [
+        5141171,
+        5141525
+    ],
+    "txIdxs": [
+        62,
+        62
+    ],
+    "logIdxs": [
+        0,
+        0
+    ],
+    "referrer": "0x00000000000000000000000000000000EFefeFEF",
+    "numClaims": 2
+}
