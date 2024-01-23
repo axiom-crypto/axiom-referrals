@@ -24,7 +24,7 @@ import {
   assertIsConst
 } from "@axiom-crypto/client";
 
-const MAX_CLAIMS = 3;
+const MAX_CLAIMS = 40;
 const REFERRAL_ADDRESS = "0x9698a5f9e16CA04FBcF61468d3FdBfF515741D76";
 const REFERRAL_MAPPING_SLOT = 3;
 
@@ -76,7 +76,7 @@ export const circuit = async ({
     // checkLessThan(add(claimIds[i - 1], i - 1), add(claimIds[i], i));
     const isLess = isLessThan(claimIds[i - 1], claimIds[i]);
     const isLessOrZero = or(isLess, isZero(claimIds[i]));
-    assertIsConst(isLessOrZero, 1);
+    checkEqual(isLessOrZero, 1);
   }
 
   let tradeVolume = witness(0);
