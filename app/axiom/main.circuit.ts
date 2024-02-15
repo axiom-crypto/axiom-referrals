@@ -24,10 +24,6 @@ import {
   assertIsConst
 } from "@axiom-crypto/client";
 
-const MAX_CLAIMS = 40;
-const REFERRAL_ADDRESS = "0x9698a5f9e16CA04FBcF61468d3FdBfF515741D76";
-const REFERRAL_MAPPING_SLOT = 3;
-
 /// For type safety, define the input types to your circuit here.
 /// These should be the _variable_ inputs to your circuit. Constants can be hard-coded into the circuit itself.
 export interface CircuitInputs {
@@ -38,6 +34,14 @@ export interface CircuitInputs {
   numClaims: CircuitValue;
 }
 
+export const defaultInputs = {
+    blockNumbers: [5141171, 5141525],
+    txIdxs: [62, 62],
+    logIdxs: [0, 0],
+    referrer: "0x00000000000000000000000000000000EFefeFEF",
+    numClaims: 2
+};
+
 export const circuit = async ({
   blockNumbers,
   txIdxs,
@@ -45,6 +49,9 @@ export const circuit = async ({
   referrer,
   numClaims
 }: CircuitInputs) => {
+  const MAX_CLAIMS = 40;
+  const REFERRAL_ADDRESS = "0x9698a5f9e16CA04FBcF61468d3FdBfF515741D76";
+  const REFERRAL_MAPPING_SLOT = 3;
 
   let numClaimsVal = Number(numClaims.value());
   if (numClaimsVal > MAX_CLAIMS) {
