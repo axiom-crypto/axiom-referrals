@@ -35,6 +35,6 @@ jobs:
 
       - name: Run Forge tests
         run: |
-          export PROVIDER_URI_SEPOLIA=${{ secrets.PROVIDER_URI_SEPOLIA }}
+          export PROVIDER_URI=${{ secrets.PROVIDER_URI_SEPOLIA }}
           forge test -vvv
         id: test
