@@ -30,15 +30,13 @@ export interface CircuitInputs {
   blockNumbers: CircuitValue[];
   txIdxs: CircuitValue[];
   logIdxs: CircuitValue[];
-  referrer: CircuitValue;
   numClaims: CircuitValue;
 }
 
 export const defaultInputs = {
-    blockNumbers: [5141171, 5141525],
-    txIdxs: [62, 62],
-    logIdxs: [0, 0],
-    referrer: "0x00000000000000000000000000000000EFefeFEF",
+    blockNumbers: [5141171, 5141525, 5141525, 5141525, 5141525, 5141525, 5141525, 5141525, 5141525, 5141525],
+    txIdxs: [62, 62, 62, 62, 62, 62, 62, 62, 62, 62],
+    logIdxs: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     numClaims: 2
 };
 
@@ -46,19 +44,23 @@ export const circuit = async ({
   blockNumbers,
   txIdxs,
   logIdxs,
-  referrer,
   numClaims
 }: CircuitInputs) => {
-  const MAX_CLAIMS = 40;
-  const REFERRAL_ADDRESS = "0x9698a5f9e16CA04FBcF61468d3FdBfF515741D76";
-  const REFERRAL_MAPPING_SLOT = 3;
+  const MAX_CLAIMS = 10;
+  const AXIOM_REFERRAL_ADDRESS = "0x9698a5f9e16CA04FBcF61468d3FdBfF515741D76";
+  const REFERRER_MAPPING_SLOT = 3;
+
+  const CLAIM_ADDRESS = "0x9698a5f9e16CA04FBcF61468d3FdBfF515741D76";
+  const EVENT_SCHEMA = "0x2c76e7a47fd53e2854856ac3f0a5f3ee40d15cfaa82266357ea9779c486ab9c3";
 
   let numClaimsVal = Number(numClaims.value());
   if (numClaimsVal > MAX_CLAIMS) {
     throw new Error("Too many claims");
   }
+  checkLessThan(numClaims, constant(MAX_CLAIMS + 1));
+  checkLessThan(constant(0), numClaims);
 
-  if (blockNumbers.length !== numClaimsVal || txIdxs.length !== numClaimsVal || logIdxs.length !== numClaimsVal) {
+  if (blockNumbers.length !== MAX_CLAIMS || txIdxs.length !== MAX_CLAIMS || logIdxs.length !== MAX_CLAIMS) {
     throw new Error("Incorrect number of claims (make sure every array has `numClaims` claims)");
   }
 
@@ -78,29 +80,40 @@ export const circuit = async ({
     const idOrZero = mul(id, isInRange);
     claimIds.push(idOrZero);
   }
+  const lastClaimId = selectFromIdx(claimIds, sub(numClaims, constant(1)));
 
   for (let i = 1; i < MAX_CLAIMS; i++) {
-    // checkLessThan(add(claimIds[i - 1], i - 1), add(claimIds[i], i));
     const isLess = isLessThan(claimIds[i - 1], claimIds[i]);
     const isLessOrZero = or(isLess, isZero(claimIds[i]));
     checkEqual(isLessOrZero, 1);
   }
 
-  let tradeVolume = witness(0);
-
+  let claimAmount = constant(0);
+  let referrer = constant(0);
   for (let i = 0; i < MAX_CLAIMS; i++) {
-    let trader = (await getReceipt(blockNumbers[i], txIdxs[i]).log(logIdxs[i]).data(0));
-    let traderReferrer = (await getSolidityMapping(blockNumbers[i], REFERRAL_ADDRESS, REFERRAL_MAPPING_SLOT).key(trader)).toCircuitValue();
-    checkEqual(referrer, traderReferrer);
+    // make sure all claims come from the correct address
+    let claimAddress = (await getReceipt(blockNumbers[i], txIdxs[i]).log(logIdxs[i]).address()).toCircuitValue();
+    checkEqual(CLAIM_ADDRESS, claimAddress);
+
+    // extract the referrer for this claim
+    let referee = (await getReceipt(blockNumbers[i], txIdxs[i]).log(logIdxs[i]).data(0, EVENT_SCHEMA));
+    let claimReferrer = (await getSolidityMapping(blockNumbers[i], AXIOM_REFERRAL_ADDRESS, REFERRER_MAPPING_SLOT).key(referee)).toCircuitValue();
+
+    // extract the amount for this claim
     let amount = await getReceipt(blockNumbers[i], txIdxs[i]).log(logIdxs[i]).data(4);
     let amountOrZero = mul(amount.toCircuitValue(), inRange[i]);
-    tradeVolume = add(tradeVolume, amountOrZero);
-  }
 
-  const lastClaimId = selectFromIdx(claimIds, sub(numClaims, constant(1)));
+    if (i == 0) {
+      referrer = claimReferrer;
+    } else {
+      checkEqual(referrer, claimReferrer);
+    }
+
+    claimAmount = add(claimAmount, amountOrZero);
+  }
 
   addToCallback(claimIds[0]);
   addToCallback(lastClaimId);
   addToCallback(referrer);
-  addToCallback(tradeVolume);
+  addToCallback(claimAmount);
 };

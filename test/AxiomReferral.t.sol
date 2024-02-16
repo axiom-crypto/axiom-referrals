@@ -14,34 +14,33 @@ contract AxiomReferralTest is AxiomTest {
         uint64[] blockNumbers;
         uint64[] txIdxs;
         uint64[] logIdxs;
-        address referrer;
         uint64 numClaims;
     }
 
     AxiomInput public input;
     bytes32 public querySchema;
 
-    event Claim(address indexed referrer, uint256 startClaimId, uint256 endClaimId, uint256 totalTradeVolume);
+    event Claim(address indexed referrer, uint256 startClaimId, uint256 endClaimId, uint256 claimAmount);
 
     function setUp() public {
         _createSelectForkAndSetupAxiom("sepolia", 5_141_172);
 
-        uint64[] memory blockNumbers = new uint64[](2);
+        uint64[] memory blockNumbers = new uint64[](10);
         blockNumbers[0] = 5_141_171;
         blockNumbers[1] = 5_141_525;
-        uint64[] memory txIdxs = new uint64[](2);
+        uint64[] memory txIdxs = new uint64[](10);
         txIdxs[0] = 62;
         txIdxs[1] = 62;
-        uint64[] memory logIdxs = new uint64[](2);
+        uint64[] memory logIdxs = new uint64[](10);
         logIdxs[0] = 0;
         logIdxs[1] = 0;
-        input = AxiomInput({
-            blockNumbers: blockNumbers,
-            txIdxs: txIdxs,
-            logIdxs: logIdxs,
-            referrer: 0x00000000000000000000000000000000EFefeFEF,
-            numClaims: 2
-        });
+
+        for (uint64 i = 2; i < 10; i++) {
+            blockNumbers[i] = 5_141_171;
+            txIdxs[i] = 62;
+            logIdxs[i] = 0;
+        }
+        input = AxiomInput({ blockNumbers: blockNumbers, txIdxs: txIdxs, logIdxs: logIdxs, numClaims: 2 });
         querySchema = axiomVm.readCircuit("app/axiom/main.circuit.ts");
         axiomReferral = new AxiomReferral(axiomV2QueryAddress, uint64(block.chainid), querySchema);
     }
@@ -64,7 +63,6 @@ contract AxiomReferralTest is AxiomTest {
             uint256(args.axiomResults[3])
         );
         */
-
         bytes32[] memory results = q.prankFulfill();
 
         require(
