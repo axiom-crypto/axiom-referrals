@@ -42,7 +42,7 @@ contract AxiomReferralTest is AxiomTest {
         }
         input = AxiomInput({ blockNumbers: blockNumbers, txIdxs: txIdxs, logIdxs: logIdxs, numClaims: 2 });
         querySchema = axiomVm.readCircuit("app/axiom/main.circuit.ts");
-        axiomReferral = new AxiomReferral(axiomV2QueryAddress, uint64(block.chainid), querySchema);
+        axiomReferral = new AxiomReferral(axiomV2QueryAddress, querySchema);
     }
 
     function test_referral() public {

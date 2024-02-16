@@ -7,9 +7,6 @@ contract AxiomReferral is AxiomV2Client {
     /// @dev The unique identifier of the circuit accepted by this contract.
     bytes32 immutable QUERY_SCHEMA;
 
-    /// @dev The chain ID of the chain whose data the callback is expected to be called from.
-    uint64 immutable SOURCE_CHAIN_ID;
-
     /// @dev `referralAddress[referee] = referrer` if `referrer` referred `referee`.
     mapping(address => address) public referralAddress;
 
@@ -32,12 +29,8 @@ contract AxiomReferral is AxiomV2Client {
 
     /// @notice Construct a new AxiomReferral contract.
     /// @param  _axiomV2QueryAddress The address of the AxiomV2Query contract.
-    /// @param  _callbackSourceChainId The ID of the chain the query reads from.
-    constructor(address _axiomV2QueryAddress, uint64 _callbackSourceChainId, bytes32 _querySchema)
-        AxiomV2Client(_axiomV2QueryAddress)
-    {
+    constructor(address _axiomV2QueryAddress, bytes32 _querySchema) AxiomV2Client(_axiomV2QueryAddress) {
         QUERY_SCHEMA = _querySchema;
-        SOURCE_CHAIN_ID = _callbackSourceChainId;
     }
 
     /// @notice Set the referring address for a referee
@@ -57,7 +50,7 @@ contract AxiomReferral is AxiomV2Client {
         uint256, // queryId,
         bytes calldata // extraData
     ) internal view override {
-        require(sourceChainId == SOURCE_CHAIN_ID, "Source chain ID does not match");
+        require(sourceChainId == block.chainid, "Source chain ID does not match");
         require(querySchema == QUERY_SCHEMA, "Invalid query schema");
     }
 
