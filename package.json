@@ -4,13 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "refer": "source .env && forge script script/SetReferrer.s.sol:SetReferrer --rpc-url $PROVIDER_URI --private-key $PRIVATE_KEY --broadcast",
+    "trade": "source .env && forge script script/Trade.s.sol:Trade --rpc-url $PROVIDER_URI --private-key $PRIVATE_KEY --broadcast",
+    "circuit:compile": "axiom circuit compile app/axiom/main.circuit.ts"
   },
   "keywords": [],
   "author": "Intrinsic Technologies",
   "license": "MIT",
   "dependencies": {
-    "@axiom-crypto/client": "2.0.3"
+    "@axiom-crypto/client": "2.0.4"
   },
   "devDependencies": {
     "typescript": "^5.3.3"
