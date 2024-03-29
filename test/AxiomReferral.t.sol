@@ -55,15 +55,14 @@ contract AxiomReferralTest is AxiomTest {
         q.send();
 
         // Prank fulfillment from Axiom
-        /*
+        bytes32[] memory axiomResults = q.peekResults();
         vm.expectEmit();
         emit Claim(
-            address(uint160(uint256(args.axiomResults[2]))),
-            uint256(args.axiomResults[0]),
-            uint256(args.axiomResults[1]),
-            uint256(args.axiomResults[3])
+            address(uint160(uint256(axiomResults[2]))),
+            uint256(axiomResults[0]),
+            uint256(axiomResults[1]),
+            uint256(axiomResults[3])
         );
-        */
         bytes32[] memory results = q.prankFulfill();
 
         require(
