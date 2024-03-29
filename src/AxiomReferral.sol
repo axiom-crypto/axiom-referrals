@@ -1,8 +1,10 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.19;
 
 import { AxiomIncentives } from "@axiom-crypto/axiom-incentives/AxiomIncentives.sol";
 
+/// @title AxiomReferral
+/// @dev A contract that enables any on-chain application to set up a referral program.
 contract AxiomReferral is AxiomIncentives {
     /// @dev `referralAddress[referee] = referrer` if `referrer` referred `referee`.
     mapping(address => address) public referralAddress;
@@ -22,7 +24,7 @@ contract AxiomReferral is AxiomIncentives {
 
     /// @notice Construct a new AxiomReferral contract.
     /// @param  _axiomV2QueryAddress The address of the AxiomV2Query contract.
-    /// @param  incentivesQuerySchemas A length-1 list containing the querySchema for registration and renewals.
+    /// @param  incentivesQuerySchemas A list containing valid querySchemas for referrals.
     constructor(address _axiomV2QueryAddress, bytes32[] memory incentivesQuerySchemas)
         AxiomIncentives(_axiomV2QueryAddress, incentivesQuerySchemas)
     { }
