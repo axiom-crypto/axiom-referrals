@@ -24,7 +24,7 @@ contract AxiomReferralScript is Script {
 
         vm.startBroadcast();
 
-        new AxiomReferral(AXIOM_V2_QUERY_MOCK_SEPOLIA_ADDR, _querySchema);
+        new AxiomReferral(AXIOM_V2_QUERY_MOCK_SEPOLIA_ADDR, querySchemas);
 
         vm.stopBroadcast();
     }

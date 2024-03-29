@@ -69,7 +69,7 @@ contract AxiomReferralTest is AxiomTest {
         bytes32[] memory results = q.prankFulfill();
 
         require(
-            axiomReferral.lastClaimedId(address(uint160(uint256(results[2])))) == uint256(results[1]),
+            axiomReferral.lastClaimedId(querySchema, uint256(results[2])) == uint256(results[1]),
             "Last claim ID not updated"
         );
     }
