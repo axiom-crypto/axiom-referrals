@@ -3,7 +3,7 @@
   out = "out"
   solc = "0.8.19"
   libs = ["lib"]
-  remappings = ["@axiom-crypto/v2-periphery/=lib/axiom-std/lib/axiom-v2-periphery/src/", "@axiom-crypto/axiom-std/=lib/axiom-std/src/"]
+  remappings = ["@axiom-crypto/axiom-std/=lib/axiom-std/src/", "@axiom-crypto/axiom-incentives=lib/axiom-incentives/src"]
   ffi = true
   fs_permissions = [{ access = "read-write", path = ".axiom" }, { access = "read", path = "app/axiom/data" }]
   ast = true

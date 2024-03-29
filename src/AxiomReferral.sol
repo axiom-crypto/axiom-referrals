@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.19;
 
-import { AxiomV2Client } from "@axiom-crypto/v2-periphery/client/AxiomV2Client.sol";
+import { AxiomIncentives } from "@axiom-crypto/axiom-incentives/AxiomIncentives.sol";
 
-contract AxiomReferral is AxiomV2Client {
+contract AxiomReferral is AxiomIncentives {
     /// @dev The unique identifier of the circuit accepted by this contract.
     bytes32 immutable QUERY_SCHEMA;
 
@@ -29,8 +29,12 @@ contract AxiomReferral is AxiomV2Client {
 
     /// @notice Construct a new AxiomReferral contract.
     /// @param  _axiomV2QueryAddress The address of the AxiomV2Query contract.
-    constructor(address _axiomV2QueryAddress, bytes32 _querySchema) AxiomV2Client(_axiomV2QueryAddress) {
-        QUERY_SCHEMA = _querySchema;
+    /// @param  incentivesQuerySchemas A length-1 list containing the querySchema for registration and renewals.
+    constructor(address _axiomV2QueryAddress, bytes32[] memory incentivesQuerySchemas)
+        AxiomIncentives(_axiomV2QueryAddress, incentivesQuerySchemas)
+    {
+        require(incentivesQuerySchemas.length == 1, "Invalid incentivesQuerySchemas length");
+        QUERY_SCHEMA = incentivesQuerySchemas[0];
     }
 
     /// @notice Set the referring address for a referee
@@ -41,38 +45,27 @@ contract AxiomReferral is AxiomV2Client {
         emit Referral(msg.sender, referrer, uint64(block.number));
     }
 
-    /// @inheritdoc AxiomV2Client
-    function _validateAxiomV2Call(
-        AxiomCallbackType, // callbackType,
-        uint64 sourceChainId,
-        address, // caller,
-        bytes32 querySchema,
-        uint256, // queryId,
-        bytes calldata // extraData
-    ) internal view override {
-        require(sourceChainId == block.chainid, "Source chain ID does not match");
-        require(querySchema == QUERY_SCHEMA, "Invalid query schema");
+    /// @inheritdoc AxiomIncentives
+    function _validateClaim(
+        bytes32, // querySchema
+        uint256, // startClaimId
+        uint256, // endClaimId
+        uint256 incentiveId,
+        uint256 // totalValue
+    ) internal pure override {
+        address referrer = address(uint160(incentiveId));
+        require(referrer != 0, "Invalid referrer");
     }
 
-    /// @inheritdoc AxiomV2Client
-    function _axiomV2Callback(
-        uint64, // sourceChainId,
-        address, // caller,
-        bytes32, // querySchema,
-        uint256, // queryId,
-        bytes32[] calldata axiomResults,
-        bytes calldata // extraData
+    /// @inheritdoc AxiomIncentives
+    function _sendClaimRewards(
+        bytes32, // querySchema
+        uint256 startClaimId,
+        uint256 endClaimId,
+        uint256 incentiveId,
+        uint256 totalValue
     ) internal override {
-        uint256 startClaimId = uint256(axiomResults[0]);
-        uint256 endClaimId = uint256(axiomResults[1]);
-        address referrer = address(uint160(uint256(axiomResults[2])));
-        uint256 claimAmount = uint256(axiomResults[3]);
-
-        require(referrer != address(0), "Referrer not set");
-        require(lastClaimedId[referrer] < startClaimId, "Already claimed");
-
-        lastClaimedId[referrer] = endClaimId;
-
-        emit Claim(referrer, startClaimId, endClaimId, claimAmount);
+        address referrer = address(uint160(incentiveId));
+        emit Claim(referrer, startClaimId, endClaimId, totalValue);
     }
 }
