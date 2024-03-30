@@ -19,9 +19,12 @@ contract AxiomReferralScript is Script {
     }
 
     function run() public {
+        bytes32[] memory querySchemas = new bytes32[](1);
+        querySchemas[0] = _querySchema;
+
         vm.startBroadcast();
 
-        new AxiomReferral(AXIOM_V2_QUERY_MOCK_SEPOLIA_ADDR, _querySchema);
+        new AxiomReferral(AXIOM_V2_QUERY_MOCK_SEPOLIA_ADDR, querySchemas);
 
         vm.stopBroadcast();
     }

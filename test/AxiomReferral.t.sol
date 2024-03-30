@@ -42,7 +42,10 @@ contract AxiomReferralTest is AxiomTest {
         }
         input = AxiomInput({ blockNumbers: blockNumbers, txIdxs: txIdxs, logIdxs: logIdxs, numClaims: 2 });
         querySchema = axiomVm.readCircuit("app/axiom/main.circuit.ts");
-        axiomReferral = new AxiomReferral(axiomV2QueryAddress, querySchema);
+
+        bytes32[] memory querySchemas = new bytes32[](1);
+        querySchemas[0] = querySchema;
+        axiomReferral = new AxiomReferral(axiomV2QueryAddress, querySchemas);
     }
 
     function test_referral() public {
@@ -51,22 +54,19 @@ contract AxiomReferralTest is AxiomTest {
         // Send the query to AxiomV2Query
         q.send();
 
-        // Prank fulfillment from Axiom, specifying `UNI_SENDER_ADDR` as the sender of the query
-
-        // TODO: implement prankFulfill to deal with verifying emitted events
-        /*
+        // Prank fulfillment from Axiom
+        bytes32[] memory axiomResults = q.peekResults();
         vm.expectEmit();
         emit Claim(
-            address(uint160(uint256(args.axiomResults[2]))),
-            uint256(args.axiomResults[0]),
-            uint256(args.axiomResults[1]),
-            uint256(args.axiomResults[3])
+            address(uint160(uint256(axiomResults[2]))),
+            uint256(axiomResults[0]),
+            uint256(axiomResults[1]),
+            uint256(axiomResults[3])
         );
-        */
         bytes32[] memory results = q.prankFulfill();
 
         require(
-            axiomReferral.lastClaimedId(address(uint160(uint256(results[2])))) == uint256(results[1]),
+            axiomReferral.lastClaimedId(querySchema, uint256(results[2])) == uint256(results[1]),
             "Last claim ID not updated"
         );
     }
