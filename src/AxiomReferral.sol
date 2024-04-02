@@ -40,6 +40,7 @@ contract AxiomReferral is AxiomIncentives {
     /// @inheritdoc AxiomIncentives
     function _validateClaim(
         bytes32, // querySchema
+        address, // caller
         uint256, // startClaimId
         uint256, // endClaimId
         uint256 incentiveId,
@@ -52,6 +53,7 @@ contract AxiomReferral is AxiomIncentives {
     /// @inheritdoc AxiomIncentives
     function _sendClaimRewards(
         bytes32, // querySchema
+        address, // caller
         uint256 startClaimId,
         uint256 endClaimId,
         uint256 incentiveId,
